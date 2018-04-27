@@ -7,6 +7,8 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import com.example.jxr.smarter.StringHash;
+
 import java.util.Date;
 
 /**
@@ -26,9 +28,10 @@ public class DBManager {
                     DBStructure.tableEntry.COLUMN_AIR + TEXT_TYPE + COMMA_SEP +
                     DBStructure.tableEntry.COLUMN_FRIDGE + TEXT_TYPE + COMMA_SEP +
                     DBStructure.tableEntry.COLUMN_WASH + TEXT_TYPE + COMMA_SEP +
-                    DBStructure.tableEntry.COLUMN_DAY + " Date" + COMMA_SEP +
-                    DBStructure.tableEntry.COLUMN_HOUR + " INTEGER" + COMMA_SEP +
-                    DBStructure.tableEntry.COLUMN_TEMP + " INTEGER" +
+                    DBStructure.tableEntry.COLUMN_DAY + TEXT_TYPE + COMMA_SEP +
+                    DBStructure.tableEntry.COLUMN_HOUR + TEXT_TYPE + COMMA_SEP +
+                    DBStructure.tableEntry.COLUMN_TEMP + TEXT_TYPE + COMMA_SEP +
+                    DBStructure.tableEntry.COLUMN_RESID + TEXT_TYPE +COMMA_SEP +
                     " );";
     private static final String SQL_DELETE_ENTRIES =
             "DROP TABLE IF EXISTS " + DBStructure.tableEntry.TABLE_NAME;
@@ -64,15 +67,16 @@ public class DBManager {
         myDBHelper.close();
     }
 
-    public long insertUsage(String userid, String air, String fridge, String wash, String day, int hour, int temp) {
+    public long insertUsage(String usageid, String air, String fridge, String wash, String day, String hour, String temp, String resid) {
         ContentValues values = new ContentValues();
-        values.put(DBStructure.tableEntry.COLUMN_ID, userid);
+        values.put(DBStructure.tableEntry.COLUMN_ID, usageid);
         values.put(DBStructure.tableEntry.COLUMN_AIR, air);
         values.put(DBStructure.tableEntry.COLUMN_FRIDGE, fridge);
         values.put(DBStructure.tableEntry.COLUMN_WASH, wash);
         values.put(DBStructure.tableEntry.COLUMN_DAY, day);
         values.put(DBStructure.tableEntry.COLUMN_HOUR, hour);
         values.put(DBStructure.tableEntry.COLUMN_TEMP, temp);
+        values.put(DBStructure.tableEntry.COLUMN_RESID, resid);
         return db.insert(DBStructure.tableEntry.TABLE_NAME, null, values);
     }
 
@@ -87,7 +91,8 @@ public class DBManager {
             DBStructure.tableEntry.COLUMN_WASH,
             DBStructure.tableEntry.COLUMN_DAY,
             DBStructure.tableEntry.COLUMN_HOUR,
-            DBStructure.tableEntry.COLUMN_TEMP
+            DBStructure.tableEntry.COLUMN_TEMP,
+            DBStructure.tableEntry.COLUMN_RESID
     };
 
     public int deleteUsage(String rowId) {

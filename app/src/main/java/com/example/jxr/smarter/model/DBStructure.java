@@ -9,12 +9,13 @@ import android.provider.BaseColumns;
 public class DBStructure {
     public static abstract class tableEntry implements BaseColumns {
         public static final String TABLE_NAME = "usage";
-        public static final String COLUMN_ID = "userid";
+        public static final String COLUMN_ID = "usageid";
         public static final String COLUMN_AIR = "air";
         public static final String COLUMN_FRIDGE = "fridge";
         public static final String COLUMN_WASH = "wash";
         public static final String COLUMN_DAY = "day";
         public static final String COLUMN_HOUR = "hour";
         public static final String COLUMN_TEMP = "temp";
+        public static final String COLUMN_RESID = "resid";
     }
 }

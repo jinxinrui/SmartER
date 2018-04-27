@@ -34,10 +34,13 @@ public class RestClient {
             "http://api.openweathermap.org/data/2.5/weather?lat=-37.8770102&lon=145.0442693&appid=f93bd59bea3ab44fb8dba0d95596adfc";
 
     private static final String GEO_URI =
-            "https://maps.googleapis.com/maps/api/geocode/json?address=900+Dandenong+Road,+Caufield,+VIC&key=AIzaSyDTRZ-ftWCk71XZIN5xZ8-GNO3XT0HQ_a8";
+            "https://maps.googleapis.com/maps/api/geocode/json?address=";
 
     private static final String BASE_URI =
             "http://118.139.60.181:11407/SmartER/webresources";
+
+    private static final String KEY = "AIzaSyDTRZ-ftWCk71XZIN5xZ8-GNO3XT0HQ_a8";
+
 
     // GET temperature from internet
     public static String findTemp() {
@@ -205,6 +208,7 @@ public class RestClient {
         }
     }
 
+    // Http POST for user
     public static void createUser(User user) {
         URL url = null;
         HttpURLConnection connection = null;
@@ -240,4 +244,103 @@ public class RestClient {
         }
     }
 
+    public static String getUsageCount() {
+        URL url = null;
+        String methodPath = "/electricityusage/count";
+        HttpURLConnection connection = null;
+        String textResult = "";
+        try {
+            url = new URL(BASE_URI + methodPath);
+
+            connection = (HttpURLConnection) url.openConnection();
+            // set the time out
+            connection.setReadTimeout(10000);
+            connection.setConnectTimeout(15000);
+            // set the connection method to GET
+            connection.setRequestMethod("GET");
+            //add http headers to set your response type to json
+            connection.setRequestProperty("Content-Type", "text/plain"); // type should conform to the type in back-end
+            connection.setRequestProperty("Accept", "text/plain");
+            //Read the response
+            Scanner inStream = new Scanner(connection.getInputStream());
+            //read the input stream and store it as string
+
+//            while (inStream.hasNextLine()) {
+//                textResult += inStream.nextLine();
+//            }
+            textResult = inStream.nextLine();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            connection.disconnect();
+        }
+        return textResult;
+    }
+
+    // get address out of user info
+    public static String getAddressSnippet(String result) {
+        String snippet = null;
+        try {
+            JSONArray jsonArray = new JSONArray(result);
+            JSONObject jsonObject = jsonArray.getJSONObject(0);
+            JSONObject resid = jsonObject.getJSONObject("resid");
+            snippet = resid.getString("address");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return snippet;
+    }
+
+    // format the address
+    public String formatAddress(String address) {
+        // format e.g. "900+Dandenong+Road,+Caulfield+East, +VIC"
+        address = address.replace(" ", "+");
+        return address;
+    }
+
+    public static String getGeoLocation(String address) {
+        URL url = null;
+        HttpURLConnection conn = null;
+        String textResult = "";
+        try {
+            url = new URL(GEO_URI + address + "&key=" + KEY);
+            // open the connection
+            conn = (HttpURLConnection) url.openConnection();
+            // set the time out
+            conn.setReadTimeout(10000);
+            conn.setConnectTimeout(15000);
+            // set the connection method to GET
+            conn.setRequestMethod("GET");
+            //add http headers to set your response type to json
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setRequestProperty("Accept", "application/json");
+            //Read the response
+            Scanner inStream = new Scanner(conn.getInputStream());
+            //read the input stream and store it as string
+            while (inStream.hasNextLine()) {
+                textResult += inStream.nextLine();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            conn.disconnect();
+        }
+
+        return textResult;
+    }
+
+    public static String[] getLonAndLat(String result) {
+        String[] snippet = new String[2];
+        try {
+            JSONObject jsonObject = new JSONObject(result);
+            String lat = jsonObject.getJSONObject("results").getJSONObject("location").getString("lat");
+            String lng = jsonObject.getJSONObject("results").getJSONObject("location").getString("lng");
+            snippet[0] = lat;
+            snippet[1] = lng;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return snippet;
+    }
 }

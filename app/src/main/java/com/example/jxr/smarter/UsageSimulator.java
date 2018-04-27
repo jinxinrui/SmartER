@@ -1,5 +1,7 @@
 package com.example.jxr.smarter;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Random;
 
 /**
@@ -17,18 +19,27 @@ public class UsageSimulator {
     public double randomFridge() {
         Random random = new Random();
         int n = random.nextInt(50) + 30;
-        return n / 100;
+        NumberFormat formatter = new DecimalFormat("#0.00");
+        String numString = formatter.format(n/100);
+        double number = Double.parseDouble(numString);
+        return number;
     }
 
     public double randomAir() {
         Random random = new Random();
         double n = random.nextInt(5) + 1;
-        return n;
+        NumberFormat formatter = new DecimalFormat("#0.00");
+        String numString = formatter.format(n);
+        double number = Double.parseDouble(numString);
+        return number;
     }
 
     public double randomWash() {
         Random random = new Random();
         int n = random.nextInt(13) + 4;
-        return n / 10;
+        NumberFormat formatter = new DecimalFormat("#0.00");
+        String numString = formatter.format(n/10);
+        double number = Double.parseDouble(numString);
+        return number;
     }
 }

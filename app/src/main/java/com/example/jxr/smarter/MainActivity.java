@@ -124,4 +124,5 @@ public class MainActivity extends AppCompatActivity
 //            currentTempView.setText(snippet);
 //        }
 //    }
+
 }
