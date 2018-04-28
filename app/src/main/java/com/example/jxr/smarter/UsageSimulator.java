@@ -9,37 +9,36 @@ import java.util.Random;
  */
 
 public class UsageSimulator {
-    private String acUsage;
-    private String fridgeUsage;
-    private String washUsage;
 
     public UsageSimulator() {
     }
 
-    public double randomFridge() {
+    // frige usage range 0.30~0.80
+    public static String randomFridge() {
         Random random = new Random();
-        int n = random.nextInt(50) + 30;
-        NumberFormat formatter = new DecimalFormat("#0.00");
-        String numString = formatter.format(n/100);
-        double number = Double.parseDouble(numString);
-        return number;
-    }
-
-    public double randomAir() {
-        Random random = new Random();
-        double n = random.nextInt(5) + 1;
+        double n = 0.30 + (0.80-0.30) * random.nextDouble();
         NumberFormat formatter = new DecimalFormat("#0.00");
         String numString = formatter.format(n);
-        double number = Double.parseDouble(numString);
-        return number;
+        //double number = Double.parseDouble(numString);
+        return numString;
     }
 
-    public double randomWash() {
+    // airCon usage range
+    public static String randomAir() {
         Random random = new Random();
-        int n = random.nextInt(13) + 4;
+        double n = 4 * random.nextDouble() + 1.00;
         NumberFormat formatter = new DecimalFormat("#0.00");
-        String numString = formatter.format(n/10);
-        double number = Double.parseDouble(numString);
-        return number;
+        String numString = formatter.format(n);
+        //double number = Double.parseDouble(numString);
+        return numString;
+    }
+
+    public static String randomWash() {
+        Random random = new Random();
+        double n = (1.3-0.4) * random.nextDouble() + 0.4;
+        NumberFormat formatter = new DecimalFormat("#0.00");
+        String numString = formatter.format(n);
+        //double number = Double.parseDouble(numString);
+        return numString;
     }
 }

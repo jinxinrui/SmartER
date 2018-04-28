@@ -24,11 +24,12 @@ public class Resident {
     public Resident() {
     }
 
-    public Resident(Integer resid, String fName, String sName, String dob, String address, String postcode, String email, String mobile, String numofRes, String provider) {
+    public Resident(Integer resid, String fName, String sName, String dob, String address,
+                    String postcode, String email, String mobile, String numofRes, String provider) {
         this.resid = resid;
         this.firstname = fName;
         this.surname = sName;
-        this.dob = dob + "T00:00:00+10:00";
+        this.dob = dob + "T00:00:00";
         this.address = address;
         this.postcode = postcode;
         this.email = email;
@@ -66,7 +67,7 @@ public class Resident {
     }
 
     public void setDob(String dob) {
-        this.dob = dob + "T00:00:00+10:00";
+        this.dob = dob + "T00:00:00";
     }
 
     public String getAddress() {

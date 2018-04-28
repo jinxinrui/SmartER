@@ -1,5 +1,6 @@
 package com.example.jxr.smarter;
 
+import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -16,6 +17,10 @@ import android.widget.TextView;
 
 import com.example.jxr.smarter.RestWS.RestClient;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Random;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -30,7 +35,12 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         Intent intent = getIntent();
+        // userInfo -- json of user information
         userInfo = intent.getStringExtra("userInfo");
+
+        MyThread mt = new MyThread();
+        mt.start();
+
 
         // initialize EditText currentTemp
 //        currentTempView = (TextView) findViewById(R.id.currentTempText);
@@ -47,7 +57,13 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         FragmentManager fragmentManager = getFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.content_frame, new MainFragment()).commit();
+
+        Bundle bundle = new Bundle();
+        bundle.putString("userInfo", userInfo);
+        Fragment firstFragment = new MainFragment();
+        firstFragment.setArguments(bundle);
+
+        fragmentManager.beginTransaction().replace(R.id.content_frame, firstFragment).commit();
     }
 
     @Override
@@ -88,19 +104,31 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+        Fragment nextFragment = null;
+        Bundle bundle = new Bundle();
 
-        } else if (id == R.id.nav_slideshow) {
+        switch (id) {
+            case R.id.nav_home:
 
-        } else if (id == R.id.nav_manage) {
+                bundle.putString("userInfo", userInfo);
+                nextFragment = new MainFragment();
+                nextFragment.setArguments(bundle);
+                break;
+            case R.id.nav_map_unit:
 
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+                bundle.putString("userInfo", userInfo);
+                nextFragment = new MapFragment();
+                nextFragment.setArguments(bundle);
+                break;
+            case R.id.nav_report_unit:
+                nextFragment = new ReportFragment();
+                break;
         }
+
+        FragmentManager fragmentManager = getFragmentManager();
+        fragmentManager.beginTransaction().replace(R.id.content_frame, nextFragment).commit();
+
+
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -109,7 +137,7 @@ public class MainActivity extends AppCompatActivity
 
     /*
         AsyncTask<Params, Progress, Result>
-        Params -- the ime of the parameters sent to the task(doInBackground()). It can be an array of objects
+        Params -- the type of the parameters sent to the task(doInBackground()). It can be an array of objects
         Progress -- the type of the progress units published during the background computation(optional). Here I set it Void.
         Result -- the type of the result of the background computation(onPostExecute())
      */
@@ -124,5 +152,111 @@ public class MainActivity extends AppCompatActivity
 //            currentTempView.setText(snippet);
 //        }
 //    }
+
+    private class MyThread extends Thread {
+        // random token decides if use airCon and washing machine or not
+        private Random random = new Random();
+        // washing machine token
+        private Boolean washToken = true;
+        // wash hour
+        private int washHour = 0;
+        // used for setting the Electricity usage ID
+        private String usageId;
+        // record number
+        private int record;
+
+        private int airCounter = 0;
+
+        private int washCounter = 0;
+
+        private int flag = 0;
+        // the earliest time washing machine can work
+        private String earlyStart = "06:00:00";
+        // the latest time washing machine work
+        private String lateStart = "19:00:00";
+
+        private String earlyAir = "09:00:00";
+        private String lateAir = "23:00:00";
+
+
+        public MyThread() {
+
+        }
+
+        public void run() {
+            String usageCount = RestClient.getUsageCount();
+            usageId = String.valueOf(Integer.parseInt(usageCount) + 1);
+            String address = RestClient.getAddressSnippet(userInfo);
+            address = RestClient.formatAddress(address);
+            String geoLocation = RestClient.getGeoLocation(address);
+            String[] latAndLon = RestClient.getLatAndLon(geoLocation);
+            String lat = latAndLon[0];
+            String lon = latAndLon[1];
+            while(!isInterrupted()){
+                String acUsage = "0.00";
+                String washUsage = "0.00";
+                String fridgeUsage = "0.00";
+                String tempRaw = RestClient.findTemp(lat ,lon);
+                String temp = RestClient.getTempSnippet(tempRaw);
+                double tempDouble = Double.parseDouble(temp);
+                // Integer tempInt used for compare temperature
+                int tempInt = (int) tempDouble;
+                // String temp used for database and POST
+                temp = String.valueOf(tempInt);
+                SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+                Date date = new Date();
+                String dateString = sdf.format(date);
+
+                if (washCounter == 0
+                        && dateString.compareTo(earlyStart) == 1
+                        && dateString.compareTo(lateStart) == -1
+                        && washToken == true) {
+                    if (random.nextBoolean() || washToken == true){
+                        washUsage = UsageSimulator.randomWash();
+                        washHour ++;
+                        if (washHour > 3){
+                            washCounter = 1;
+                        }
+                    }
+
+                }else if(dateString.compareTo("21:00:00") == 1 && dateString.compareTo(earlyStart) == -1) {
+                    washCounter = 0;
+                }
+
+                if (airCounter < 10 && tempInt >= 20
+                        && dateString.compareTo(earlyAir) == 1
+                        && dateString.compareTo(lateAir) == -1) {
+                    if (random.nextBoolean()){
+                        acUsage = UsageSimulator.randomAir();
+                        airCounter ++;
+                    }
+                } else if (dateString.compareTo(lateAir) == 1 && dateString.compareTo(earlyAir) == -1) {
+                    airCounter = 0;
+                }
+
+
+
+                fridgeUsage = UsageSimulator.randomFridge();
+                if (record >= 24) {
+                    record = 0;
+                    // POST all records to back-end
+                    // Drop Table
+                }
+
+
+
+
+                try {
+                    Thread.sleep(1000*60*60);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public void dropTable() {
+
+    }
 
 }

@@ -33,6 +33,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+
         mUserEditText = (EditText) findViewById(R.id.userEditText);
         mPasswordEditText = (EditText) findViewById(R.id.passwordEditText);
 
@@ -44,6 +45,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         //test = (TextView) findViewById(R.id.testText);
 
     }
+
+
 
     public void onClick(View view) {
 
@@ -61,8 +64,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
                         if (!mPasswordEditText.getText().toString().trim().isEmpty() &&
                                 mPasswordEditText.getText().toString().equals(realPassword)) {
-//                            Intent intent = new Intent(LoginActivity.class, MainActivity.class);
-//                            intent.putExtra("userInfo", userInfo);
                             goToMainPage(userInfo);
                         } else {
                             AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
@@ -77,7 +78,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 }.execute(new String[] {mUserEditText.getText().toString()});
                 break;
             case R.id.registerButton:
-
+                // need to get the number of residents in the back-end
                 new AsyncTask<String, Void, String>() {
                     @Override
                     protected String doInBackground(String... params) {

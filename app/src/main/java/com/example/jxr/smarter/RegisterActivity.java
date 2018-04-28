@@ -3,6 +3,7 @@ package com.example.jxr.smarter;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -32,7 +33,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     private EditText mMobile;
     private EditText mEmail;
     private Spinner mNumofRes;
-    private EditText mProvider;
+    private Spinner mProvider;
     private EditText mUsername;
     private EditText mPassword;
 
@@ -65,7 +66,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         mMobile = (EditText) findViewById(R.id.mobile);
         mEmail = (EditText) findViewById(R.id.email);
         mNumofRes = (Spinner) findViewById(R.id.numofRes);
-        mProvider = (EditText) findViewById(R.id.provider);
+        mProvider = (Spinner) findViewById(R.id.provider);
         mUsername = (EditText) findViewById(R.id.username);
         mPassword = (EditText) findViewById(R.id.password);
 
@@ -102,46 +103,69 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     }
 
     public void onClick(View view) {
-        switch(view.getId()) {
+        switch (view.getId()) {
             case R.id.submitButton:
-                final String fName = mFirstname.getText().toString();
-                final String sName = mSurname.getText().toString();
-                final String dob = mDob.getText().toString();
-                final String address = mAddress.getText().toString();
-                final String postcode = mPostcode.getText().toString();
-                final String mobile = mMobile.getText().toString();
+                String fName = mFirstname.getText().toString();
+                String sName = mSurname.getText().toString();
+                String dob = mDob.getText().toString();
+                String address = mAddress.getText().toString();
+                String postcode = mPostcode.getText().toString();
+                String mobile = mMobile.getText().toString();
                 final String email = mEmail.getText().toString();
-                final String numofRes = mNumofRes.getSelectedItem().toString();
-                final String provider = mProvider.getText().toString();
-                String username = mUsername.getText().toString();
-                String password = mPassword.getText().toString();
+                String numofRes = mNumofRes.getSelectedItem().toString();
+                String provider = mProvider.getSelectedItem().toString();
+                final String username = mUsername.getText().toString();
+                final String password = mPassword.getText().toString();
 
-                // validation
+                if (empty(fName, sName, dob, address, postcode, email, mobile, numofRes, provider)) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(RegisterActivity.this);
+                    builder.setTitle("Alert");
+                    builder.setMessage("Not all fields are filled!");
+                    builder.setPositiveButton("OK", null);
+                    builder.show();
+                } else {
+                    final Resident resident = new Resident(resid, fName, sName, dob, address,
+                            postcode, email, mobile, numofRes, provider);
+                    // POST user to the back-end
+                    new AsyncTask<String, Void, String>() {
+                        @Override
+                        // cannot manipulate UI elements inside doInBackground
+                        protected String doInBackground(String... params) {
+                            String message = "";
+                            String userDb = RestClient.findUser(username);
+                            String emailDb = RestClient.getResidentByEmail(email);
+                            // check if username or email exist
+                            if (!userDb.isEmpty() && !userDb.equals("[]")) {
+                                message = "Username";
+                            } else if (!emailDb.isEmpty() && !emailDb.equals("[]")) {
+                                message = "Email";
+                            } else {
+                                RestClient.createResident(resident);
 
-                // hash password
-                //password = StringHash.hashPass(password);
+                                DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                                Date date = new Date();
+                                String currentDate = dateFormat.format(date);
 
-                final Resident resident = new Resident(resid,fName,sName,dob,address,postcode,email,mobile,numofRes,provider);
+                                User user = new User(username, password, currentDate, resident);
+                                RestClient.createUser(user);
+                            }
 
-                new AsyncTask<String, Void, String>() {
-                    @Override
-                    protected String doInBackground(String... params) {
-
-                        RestClient.createResident(resident);
-
-                        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-                        Date date = new Date();
-                        String currentDate = dateFormat.format(date);
-                        currentDate = currentDate + "+10:00";
-                        User user = new User(params[0], params[1], currentDate, resident);
-                        RestClient.createUser(user);
-                        return "OK";
-                    }
-
-                    protected void onPostExecute(String result) {
-                        goToLogin();
-                    }
-                }.execute(username, password);
+                            return message;
+                        }
+                        @Override
+                        protected void onPostExecute(String result) {
+                            if(!result.isEmpty()){
+                                AlertDialog.Builder builder = new AlertDialog.Builder(RegisterActivity.this);
+                                builder.setTitle("Alert");
+                                builder.setMessage(result + " already exists!");
+                                builder.setPositiveButton("OK", null);
+                                builder.show();
+                            } else {
+                                goToLogin();
+                            }
+                        }
+                    }.execute(new String[]{null});
+                }
                 break;
 
             default:
@@ -159,5 +183,15 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     public void goToLogin() {
         Intent intent = new Intent(this, LoginActivity.class);
         startActivity(intent);
+    }
+
+    public boolean empty(String fName, String sName, String dob, String address,
+                         String postcode, String email, String mobile, String numofRes, String provider) {
+        boolean notFilled = false;
+        if (fName.trim().isEmpty() || sName.trim().isEmpty() || dob.trim().isEmpty() || address.trim().isEmpty() ||
+                postcode.trim().isEmpty() || email.trim().isEmpty() || mobile.trim().isEmpty()) {
+            notFilled = true;
+        }
+        return notFilled;
     }
 }
