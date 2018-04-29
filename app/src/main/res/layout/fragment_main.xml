@@ -58,6 +58,25 @@
         android:textSize="18sp"
         app:layout_constraintStart_toEndOf="@+id/textView7"
         app:layout_constraintTop_toBottomOf="@+id/textView5" />
+
+    <TextView
+        android:id="@+id/testTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:text="Electricity Usage Condition:"
+        app:layout_constraintBaseline_toBaselineOf="@+id/messageTextView"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/messageTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="23dp"
+        android:text="TextView"
+        app:layout_constraintStart_toEndOf="@+id/testTextView"
+        app:layout_constraintTop_toBottomOf="@+id/helloNameText" />
     <!--</android.support.constraint.ConstraintLayout>-->
     <!--</ScrollView>-->
 

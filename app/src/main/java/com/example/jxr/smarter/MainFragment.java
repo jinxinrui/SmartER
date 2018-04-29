@@ -1,6 +1,7 @@
 package com.example.jxr.smarter;
 
 import android.app.Fragment;
+import android.database.SQLException;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -10,6 +11,12 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.jxr.smarter.RestWS.RestClient;
+import com.example.jxr.smarter.model.DBManager;
+import com.example.jxr.smarter.model.ElectricityUsage;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Created by jxr on 25/4/18.
@@ -19,12 +26,16 @@ public class MainFragment extends Fragment {
     private View vMain;
     private TextView currentTempView;
     private TextView firstname;
+    private TextView usageCondition;
     private String userInfo;
+    private DBManager dbManager;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         vMain = inflater.inflate(R.layout.fragment_main, container, false);
+
+        dbManager = new DBManager(getContext());
 
         currentTempView = (TextView) vMain.findViewById(R.id.currentTempText);
 
@@ -35,6 +46,24 @@ public class MainFragment extends Fragment {
         firstname = (TextView) vMain.findViewById(R.id.helloNameText);
         firstname.setText(helloName);
 
+        Date currentTime = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+        String time = sdf.format(currentTime);
+
+        String message = "Not in peak hour";
+        double currentUsage = getCurrentUsage();
+        if (time.compareTo("09:00:00") >= 0 && time.compareTo("22:00:00") <= 0) {
+            if (currentUsage > 1.5) {
+                message = "Good!";
+            } else {
+                message = "Not Good!";
+            }
+        }
+        usageCondition = (TextView) vMain.findViewById(R.id.messageTextView);
+        usageCondition.setText(message);
+
+
+        // display temperature
         new AsyncTask<String, Void, String>() {
             @Override
             protected String doInBackground(String... params) {
@@ -53,20 +82,24 @@ public class MainFragment extends Fragment {
             }
         }.execute(new String[] {null});
 
-//        Factorial f = new Factorial();
-//        f.execute(new String[] {null});
+
         return vMain;
     }
 
-//    private class Factorial extends AsyncTask<String, Void, String> {
-//        @Override
-//        protected String doInBackground(String... params) {
-//            return RestClient.findTemp(); // result in onPostExecute is returned by this
-//        }
-//        @Override
-//        protected void onPostExecute(String result) {
-//            String snippet = RestClient.getSnippet(result);
-//            currentTempView.setText(snippet);
-//        }
-//    }
+    public double getCurrentUsage() {
+        try {
+            dbManager.open();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        ArrayList<ElectricityUsage> usageList =  dbManager.getUsageList();
+        ElectricityUsage usageEntry = usageList.get(usageList.size() - 1);
+        String acUsage = usageEntry.getAcusage();
+        String fridgeUsage = usageEntry.getFridgeusage();
+        String washUsage = usageEntry.getWashusage();
+        double total = Double.parseDouble(acUsage) + Double.parseDouble(fridgeUsage) + Double.parseDouble(washUsage);
+        dbManager.close();
+        return total;
+    }
+
 }

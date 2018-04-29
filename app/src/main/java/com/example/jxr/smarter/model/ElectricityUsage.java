@@ -12,9 +12,9 @@ public class ElectricityUsage {
     private String temperature;
     private String date;
     private String time;
-    private Resident resid;
+    private String resid;
 
-    public ElectricityUsage(String usageid, String acusage, String fridgeusage, String washusage, String temperature, String date, String time, Resident resid) {
+    public ElectricityUsage(String usageid, String acusage, String fridgeusage, String washusage, String temperature, String date, String time, String resid) {
         this.usageid = usageid;
         this.acusage = acusage;
         this.fridgeusage = fridgeusage;
@@ -23,6 +23,10 @@ public class ElectricityUsage {
         this.date = date;
         this.time = time;
         this.resid = resid;
+    }
+
+    public ElectricityUsage() {
+
     }
 
     public String getUsageid() {
@@ -81,11 +85,11 @@ public class ElectricityUsage {
         this.time = time;
     }
 
-    public Resident getResid() {
+    public String getResid() {
         return resid;
     }
 
-    public void setResid(Resident resid) {
+    public void setResid(String resid) {
         this.resid = resid;
     }
 }

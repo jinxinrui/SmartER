@@ -9,7 +9,10 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import com.example.jxr.smarter.StringHash;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 /**
  * Created by jxr on 25/4/18.
@@ -31,10 +34,13 @@ public class DBManager {
                     DBStructure.tableEntry.COLUMN_DAY + TEXT_TYPE + COMMA_SEP +
                     DBStructure.tableEntry.COLUMN_HOUR + TEXT_TYPE + COMMA_SEP +
                     DBStructure.tableEntry.COLUMN_TEMP + TEXT_TYPE + COMMA_SEP +
-                    DBStructure.tableEntry.COLUMN_RESID + TEXT_TYPE +COMMA_SEP +
+                    DBStructure.tableEntry.COLUMN_RESID + TEXT_TYPE +
                     " );";
     private static final String SQL_DELETE_ENTRIES =
             "DROP TABLE IF EXISTS " + DBStructure.tableEntry.TABLE_NAME;
+
+
+    private ArrayList<ElectricityUsage> usageList;
 
     private static class MySQLiteOpenHelper extends SQLiteOpenHelper {
         public MySQLiteOpenHelper(Context context) {
@@ -53,9 +59,19 @@ public class DBManager {
 
     private MySQLiteOpenHelper myDBHelper;
     private SQLiteDatabase db;
+    private String[] columns = {
+            DBStructure.tableEntry.COLUMN_ID,
+            DBStructure.tableEntry.COLUMN_AIR,
+            DBStructure.tableEntry.COLUMN_FRIDGE,
+            DBStructure.tableEntry.COLUMN_WASH,
+            DBStructure.tableEntry.COLUMN_DAY,
+            DBStructure.tableEntry.COLUMN_HOUR,
+            DBStructure.tableEntry.COLUMN_TEMP,
+            DBStructure.tableEntry.COLUMN_RESID
+    };
 
-    public DBManager(Context context) {
-        this.context = context;
+    public DBManager(Context ctx) {
+        this.context = ctx;
         myDBHelper = new MySQLiteOpenHelper(context);
     }
 
@@ -84,16 +100,7 @@ public class DBManager {
         return db.query(DBStructure.tableEntry.TABLE_NAME, columns, null, null, null, null, null);
     }
 
-    private String[] columns = {
-            DBStructure.tableEntry.COLUMN_ID,
-            DBStructure.tableEntry.COLUMN_AIR,
-            DBStructure.tableEntry.COLUMN_FRIDGE,
-            DBStructure.tableEntry.COLUMN_WASH,
-            DBStructure.tableEntry.COLUMN_DAY,
-            DBStructure.tableEntry.COLUMN_HOUR,
-            DBStructure.tableEntry.COLUMN_TEMP,
-            DBStructure.tableEntry.COLUMN_RESID
-    };
+
 
     public int deleteUsage(String rowId) {
         String [] selectionArgs = {
@@ -103,5 +110,31 @@ public class DBManager {
         return db.delete(DBStructure.tableEntry.TABLE_NAME, selection, selectionArgs);
     }
 
+    public void dropTable() {
+        db.execSQL(SQL_DELETE_ENTRIES);
+    }
 
+    public void reCreateTable() {
+        db.execSQL(SQL_CREATE_ENTRIES);
+    }
+
+    public ArrayList<ElectricityUsage> getUsageList() {
+        usageList = new ArrayList<>();
+        Cursor cursor = getAll();
+        while(cursor.moveToNext()) {
+            ElectricityUsage usageEntry = new ElectricityUsage(
+                    cursor.getString(0),
+                    cursor.getString(1),
+                    cursor.getString(2),
+                    cursor.getString(3),
+                    cursor.getString(4),
+                    cursor.getString(5),
+                    cursor.getString(6),
+                    cursor.getString(7));
+            usageList.add(usageEntry);
+        }
+        cursor.close();
+
+        return usageList;
+    }
 }

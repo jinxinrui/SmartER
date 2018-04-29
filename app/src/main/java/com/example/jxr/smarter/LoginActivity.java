@@ -46,7 +46,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     }
 
-
+/*
+        AsyncTask<Params, Progress, Result>
+        Params -- the type of the parameters sent to the task(doInBackground()). It can be an array of objects
+        Progress -- the type of the progress units published during the background computation(optional). Here I set it Void.
+        Result -- the type of the result of the background computation(onPostExecute())
+     */
 
     public void onClick(View view) {
 

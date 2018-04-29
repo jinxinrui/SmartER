@@ -2,6 +2,7 @@ package com.example.jxr.smarter.RestWS;
 
 import android.util.Log;
 
+import com.example.jxr.smarter.model.ElectricityUsage;
 import com.example.jxr.smarter.model.Resident;
 import com.example.jxr.smarter.model.User;
 import com.google.gson.Gson;
@@ -27,8 +28,8 @@ public class RestClient {
 
     // URI = "http://ip_address:11407/project_name/webresources"
 
-    private static final String USER_URI =
-            "http://192.168.1.106:11407/SmartER/webresources/entities.credential/findByCredential/";
+//    private static final String USER_URI =
+//            "http://118.139.60.181:11407/SmartER/webresources/entities.credential/findByCredential/";
 
     private static final String WEATHER_URI =
             "http://api.openweathermap.org/data/2.5/weather?"; //lat=-37.8770102&lon=145.0442693&appid=f93bd59bea3ab44fb8dba0d95596adfc
@@ -37,7 +38,7 @@ public class RestClient {
             "https://maps.googleapis.com/maps/api/geocode/json?address=";
 
     private static final String BASE_URI =
-            "http://192.168.1.106:11407/SmartER/webresources";
+            "http://118.139.60.181:11407/SmartER/webresources";
 
     private static final String KEY = "AIzaSyDTRZ-ftWCk71XZIN5xZ8-GNO3XT0HQ_a8";
 
@@ -445,4 +446,41 @@ public class RestClient {
         }
         return textResult;
     }
+
+    // Http POST for Electricity Usage
+    public static void createElecUsage(ElectricityUsage electricityUsage) {
+        URL url = null;
+        HttpURLConnection connection = null;
+        final String methodPath = "/entities.electricityusage/";
+        try {
+            Gson gson = new Gson();
+            String stringUserJson = gson.toJson(electricityUsage);
+            url = new URL(BASE_URI + methodPath);
+            // open connection
+            connection = (HttpURLConnection) url.openConnection();
+            // set time out
+            connection.setReadTimeout(10000);
+            connection.setConnectTimeout(15000);
+            // set connection method to POST
+            connection.setRequestMethod("POST");
+            // set the output to true
+            connection.setDoOutput(true);
+            // set length of the data you want to send
+            connection.setFixedLengthStreamingMode(stringUserJson.getBytes().length);
+            // add HTTP headers
+            connection.setRequestProperty("Content-Type", "application/json");
+
+            // send the POST out
+            PrintWriter out = new PrintWriter(connection.getOutputStream());
+            out.print(stringUserJson);
+            out.close();
+            Log.i("error", new Integer(connection.getResponseCode()).toString());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            connection.disconnect();
+        }
+    }
+
 }

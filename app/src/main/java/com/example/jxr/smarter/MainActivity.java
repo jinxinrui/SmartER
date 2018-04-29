@@ -3,6 +3,8 @@ package com.example.jxr.smarter;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.SQLException;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -13,19 +15,30 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.example.jxr.smarter.RestWS.RestClient;
+import com.example.jxr.smarter.model.DBManager;
+import com.example.jxr.smarter.model.ElectricityUsage;
 
+import java.security.spec.EllipticCurve;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    //TextView currentTempView;
+    // userInfo is raw data get from http
     private String userInfo;
+
+    ArrayList<ElectricityUsage> usageList = new ArrayList<>();
+
+    private DBManager dbManager;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +47,7 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+
         Intent intent = getIntent();
         // userInfo -- json of user information
         userInfo = intent.getStringExtra("userInfo");
@@ -41,11 +55,17 @@ public class MainActivity extends AppCompatActivity
         MyThread mt = new MyThread();
         mt.start();
 
+        // initialize database
+        dbManager = new DBManager(this);
 
-        // initialize EditText currentTemp
-//        currentTempView = (TextView) findViewById(R.id.currentTempText);
-//        Factorial f = new Factorial();
-//        f.execute(new String[] {null});
+
+//        Button testButton = (Button) findViewById(R.id.thisButton);
+//        testButton.setOnClickListener(new View.OnClickListener() {
+//            public void onClick(View v) {
+//                TextView test = (TextView) findViewById(R.id.testTextView);
+//                test.setText(readData());
+//            }
+//        });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -135,35 +155,21 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    /*
-        AsyncTask<Params, Progress, Result>
-        Params -- the type of the parameters sent to the task(doInBackground()). It can be an array of objects
-        Progress -- the type of the progress units published during the background computation(optional). Here I set it Void.
-        Result -- the type of the result of the background computation(onPostExecute())
-     */
-//    private class Factorial extends AsyncTask<String, Void, String> {
-//        @Override
-//        protected String doInBackground(String... params) {
-//            return RestClient.findTemp(); // result in onPostExecute is returned by this
-//        }
-//        @Override
-//        protected void onPostExecute(String result) {
-//            String snippet = RestClient.getSnippet(result);
-//            currentTempView.setText(snippet);
-//        }
-//    }
 
+
+
+
+//private class extends new thread to record usage.
     private class MyThread extends Thread {
         // random token decides if use airCon and washing machine or not
         private Random random = new Random();
         // washing machine token
-        private Boolean washToken = true;
+        private Boolean washToken = false;
         // wash hour
         private int washHour = 0;
-        // used for setting the Electricity usage ID
-        private String usageId;
+
         // record number
-        private int record;
+        private int records;
 
         private int airCounter = 0;
 
@@ -184,8 +190,13 @@ public class MainActivity extends AppCompatActivity
         }
 
         public void run() {
+            // used for setting the Electricity usage ID
             String usageCount = RestClient.getUsageCount();
-            usageId = String.valueOf(Integer.parseInt(usageCount) + 1);
+            int usageId = Integer.parseInt(usageCount) + 1;
+            String usageIdString = String.valueOf(usageId);
+
+            String resident = RestClient.getResidSnippet(userInfo);
+
             String address = RestClient.getAddressSnippet(userInfo);
             address = RestClient.formatAddress(address);
             String geoLocation = RestClient.getGeoLocation(address);
@@ -193,56 +204,96 @@ public class MainActivity extends AppCompatActivity
             String lat = latAndLon[0];
             String lon = latAndLon[1];
             while(!isInterrupted()){
+                // initialize usage
                 String acUsage = "0.00";
                 String washUsage = "0.00";
                 String fridgeUsage = "0.00";
+
                 String tempRaw = RestClient.findTemp(lat ,lon);
                 String temp = RestClient.getTempSnippet(tempRaw);
                 double tempDouble = Double.parseDouble(temp);
+
                 // Integer tempInt used for compare temperature
                 int tempInt = (int) tempDouble;
+
                 // String temp used for database and POST
                 temp = String.valueOf(tempInt);
                 SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
                 Date date = new Date();
-                String dateString = sdf.format(date);
+                String timeString = sdf.format(date);
+                // record the hour
+                String hour = getTime(timeString);
+
+                // record the date
+                SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                String dayString = sdf1.format(date);
 
                 if (washCounter == 0
-                        && dateString.compareTo(earlyStart) == 1
-                        && dateString.compareTo(lateStart) == -1
-                        && washToken == true) {
-                    if (random.nextBoolean() || washToken == true){
+                        && timeString.compareTo(earlyStart) > 0
+                        && timeString.compareTo(lateStart) < 0
+                        && washCounter < 3) {
+                    if (washToken == true) {
                         washUsage = UsageSimulator.randomWash();
-                        washHour ++;
-                        if (washHour > 3){
-                            washCounter = 1;
-                        }
+                        washCounter++;
+                    } else if (random.nextBoolean()) {
+                        washUsage = UsageSimulator.randomWash();
+                        washCounter++;
+                        washToken = true;
                     }
-
-                }else if(dateString.compareTo("21:00:00") == 1 && dateString.compareTo(earlyStart) == -1) {
+                } else if(timeString.compareTo("21:00:00") > 0 && timeString.compareTo(earlyStart) < 0) {
                     washCounter = 0;
                 }
 
                 if (airCounter < 10 && tempInt >= 20
-                        && dateString.compareTo(earlyAir) == 1
-                        && dateString.compareTo(lateAir) == -1) {
+                        && timeString.compareTo(earlyAir) > 0
+                        && timeString.compareTo(lateAir) < 0) {
                     if (random.nextBoolean()){
                         acUsage = UsageSimulator.randomAir();
                         airCounter ++;
                     }
-                } else if (dateString.compareTo(lateAir) == 1 && dateString.compareTo(earlyAir) == -1) {
+                } else if (timeString.compareTo(lateAir) > 0 && timeString.compareTo(earlyAir) < 0) {
                     airCounter = 0;
                 }
 
 
 
                 fridgeUsage = UsageSimulator.randomFridge();
-                if (record >= 24) {
-                    record = 0;
-                    // POST all records to back-end
-                    // Drop Table
-                }
+                usageId = usageId + 1;
 
+                // insert to database
+                insertData(usageIdString, acUsage, fridgeUsage, washUsage, dayString, timeString, temp, resident);
+                records = records + 1;
+
+                if (records >= 24) {
+                    records = 0;
+                    // get all records in database
+                    Cursor cursor = dbManager.getAll();
+                    while(cursor.moveToNext()) {
+                        ElectricityUsage usageEntry = new ElectricityUsage(
+                                cursor.getString(0),
+                                cursor.getString(1),
+                                cursor.getString(2),
+                                cursor.getString(3),
+                                cursor.getString(4),
+                                cursor.getString(5),
+                                cursor.getString(6),
+                                cursor.getString(7));
+                        usageList.add(usageEntry);
+                    }
+                    cursor.close();
+
+                    // POST all records to back-end
+                    for (int i = 0; i < usageList.size(); i++) {
+                        RestClient.createElecUsage(usageList.get(i));
+                    }
+
+                    // Drop Table
+                    dbManager.dropTable();
+                    // Re-create table
+                    dbManager.reCreateTable();
+                    // clear usageList
+                    usageList.clear();
+                }
 
 
 
@@ -259,4 +310,87 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    public String getTime(String date) {
+        String time = null;
+        if (date.compareTo("00:00:00") >= 0 && date.compareTo("01:00:00") < 0) {
+            time = "0";
+        } else if (date.compareTo("01:00:00") >= 0 && date.compareTo("02:00:00") < 0) {
+            time = "1";
+        } else if (date.compareTo("02:00:00") >= 0 && date.compareTo("03:00:00") < 0) {
+            time = "2";
+        } else if (date.compareTo("03:00:00") >= 0 && date.compareTo("04:00:00") < 0) {
+            time = "3";
+        } else if (date.compareTo("04:00:00") >= 0 && date.compareTo("05:00:00") < 0) {
+            time = "4";
+        } else if (date.compareTo("05:00:00") >= 0 && date.compareTo("06:00:00") < 0) {
+            time = "5";
+        } else if (date.compareTo("06:00:00") >= 0 && date.compareTo("07:00:00") < 0) {
+            time = "6";
+        } else if (date.compareTo("07:00:00") >= 0 && date.compareTo("08:00:00") < 0) {
+            time = "7";
+        } else if (date.compareTo("08:00:00") >= 0 && date.compareTo("09:00:00") < 0) {
+            time = "8";
+        } else if (date.compareTo("09:00:00") >= 0 && date.compareTo("10:00:00") < 0) {
+            time = "9";
+        } else if (date.compareTo("10:00:00") >= 0 && date.compareTo("11:00:00") < 0) {
+            time = "10";
+        } else if (date.compareTo("11:00:00") >= 0 && date.compareTo("12:00:00") < 0) {
+            time = "11";
+        } else if (date.compareTo("12:00:00") >= 0 && date.compareTo("13:00:00") < 0) {
+            time = "12";
+        } else if (date.compareTo("13:00:00") >= 0 && date.compareTo("14:00:00") < 0) {
+            time = "13";
+        } else if (date.compareTo("14:00:00") >= 0 && date.compareTo("15:00:00") < 0) {
+            time = "14";
+        } else if (date.compareTo("15:00:00") >= 0 && date.compareTo("16:00:00") < 0) {
+            time = "15";
+        } else if (date.compareTo("16:00:00") >= 0 && date.compareTo("17:00:00") < 0) {
+            time = "16";
+        } else if (date.compareTo("17:00:00") >= 0 && date.compareTo("18:00:00") < 0) {
+            time = "17";
+        } else if (date.compareTo("18:00:00") >= 0 && date.compareTo("19:00:00") < 0) {
+            time = "18";
+        } else if (date.compareTo("19:00:00") >= 0 && date.compareTo("20:00:00") < 0) {
+            time = "19";
+        } else if (date.compareTo("20:00:00") >= 0 && date.compareTo("21:00:00") < 0) {
+            time = "20";
+        } else if (date.compareTo("21:00:00") >= 0 && date.compareTo("22:00:00") < 0) {
+            time = "21";
+        } else if (date.compareTo("22:00:00") >= 0 && date.compareTo("23:00:00") < 0) {
+            time = "22";
+        } else if (date.compareTo("23:00:00") >= 0 && date.compareTo("23:59:59") < 0) {
+            time = "23";
+        }
+        return time;
+    }
+
+    // Database manipulation
+    public void insertData(String usageid, String air, String fridge, String wash,
+                           String day, String hour, String temp, String resid) {
+        try {
+            dbManager.open();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        dbManager.insertUsage(usageid, air, fridge, wash, day, hour, temp, resid);
+        dbManager.close();
+    }
+
+
+
+//    public String readData() {
+//        try {
+//            dbManager.open();
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//
+//        Cursor cursor = dbManager.getAll();
+//        String s = "";
+//        while(cursor.moveToNext()) {
+//            s += cursor.getString(0) + cursor.getString(1) + cursor.getString(1);
+//        }
+//        dbManager.close();
+//        return s;
+//    }
 }
