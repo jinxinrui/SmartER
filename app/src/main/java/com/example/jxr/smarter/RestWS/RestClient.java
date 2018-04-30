@@ -38,7 +38,7 @@ public class RestClient {
             "https://maps.googleapis.com/maps/api/geocode/json?address=";
 
     private static final String BASE_URI =
-            "http://118.139.60.181:11407/SmartER/webresources";
+            "http://192.168.1.101:11407/SmartER/webresources";
 
     private static final String KEY = "AIzaSyDTRZ-ftWCk71XZIN5xZ8-GNO3XT0HQ_a8";
 
@@ -401,14 +401,26 @@ public class RestClient {
         return textResult;
     }
 
-    // get resid from user info
-    public static String getResidSnippet(String userInfo) {
+    // get resident from user info
+    public static String getResidentSnippet(String userInfo) {
         String snippet = null;
         try {
             JSONArray jsonArray = new JSONArray(userInfo);
             JSONObject jsonObject = jsonArray.getJSONObject(0);
-            String resid = jsonObject.getString("resid");
-            snippet = resid;
+            String resident = jsonObject.getString("resid");
+            snippet = resident;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return snippet;
+    }
+
+    // get resident id snippet from resident
+    public static String getResidSnippet(String resident) {
+        String snippet = null;
+        try {
+            JSONObject jsonObject = new JSONObject(resident);
+            snippet = jsonObject.getString("resid");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -482,5 +494,4 @@ public class RestClient {
             connection.disconnect();
         }
     }
-
 }

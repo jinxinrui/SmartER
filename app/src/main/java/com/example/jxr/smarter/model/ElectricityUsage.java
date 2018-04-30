@@ -92,4 +92,18 @@ public class ElectricityUsage {
     public void setResid(String resid) {
         this.resid = resid;
     }
+
+    @Override
+    public String toString() {
+        return "ElectricityUsage{" +
+                "usageid='" + usageid + '\'' +
+                ", acusage='" + acusage + '\'' +
+                ", fridgeusage='" + fridgeusage + '\'' +
+                ", washusage='" + washusage + '\'' +
+                ", temperature='" + temperature + '\'' +
+                ", date='" + date + '\'' +
+                ", time='" + time + '\'' +
+                ", resid='" + resid + '\'' +
+                '}';
+    }
 }

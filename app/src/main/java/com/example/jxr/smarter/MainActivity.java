@@ -4,8 +4,6 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.SQLException;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -15,15 +13,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
 
 import com.example.jxr.smarter.RestWS.RestClient;
 import com.example.jxr.smarter.model.DBManager;
 import com.example.jxr.smarter.model.ElectricityUsage;
 
-import java.security.spec.EllipticCurve;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -47,16 +41,13 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        // initialize database
+        dbManager = new DBManager(this);
+
 
         Intent intent = getIntent();
         // userInfo -- json of user information
         userInfo = intent.getStringExtra("userInfo");
-
-        MyThread mt = new MyThread();
-        mt.start();
-
-        // initialize database
-        dbManager = new DBManager(this);
 
 
 //        Button testButton = (Button) findViewById(R.id.thisButton);
@@ -84,6 +75,9 @@ public class MainActivity extends AppCompatActivity
         firstFragment.setArguments(bundle);
 
         fragmentManager.beginTransaction().replace(R.id.content_frame, firstFragment).commit();
+
+        MyThread mt = new MyThread();
+        mt.start();
     }
 
     @Override
@@ -140,8 +134,22 @@ public class MainActivity extends AppCompatActivity
                 nextFragment = new MapFragment();
                 nextFragment.setArguments(bundle);
                 break;
-            case R.id.nav_report_unit:
-                nextFragment = new ReportFragment();
+
+            case R.id.nav_line_unit:
+                nextFragment = new LinechartFragment();
+                break;
+
+            case R.id.nav_pie_unit:
+                nextFragment = new PiechartFragment();
+                break;
+
+            case R.id.nav_database_unit:
+                nextFragment = new DataFragment();
+                break;
+
+
+
+            default:
                 break;
         }
 
@@ -195,7 +203,7 @@ public class MainActivity extends AppCompatActivity
             int usageId = Integer.parseInt(usageCount) + 1;
             String usageIdString = String.valueOf(usageId);
 
-            String resident = RestClient.getResidSnippet(userInfo);
+            String resident = RestClient.getResidentSnippet(userInfo);
 
             String address = RestClient.getAddressSnippet(userInfo);
             address = RestClient.formatAddress(address);
@@ -288,9 +296,7 @@ public class MainActivity extends AppCompatActivity
                     }
 
                     // Drop Table
-                    dbManager.dropTable();
-                    // Re-create table
-                    dbManager.reCreateTable();
+                    dbManager.removeAll();
                     // clear usageList
                     usageList.clear();
                 }

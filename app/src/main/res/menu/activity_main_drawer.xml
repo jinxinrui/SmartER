@@ -27,21 +27,27 @@
             android:id="@+id/nav_map_unit"
             android:title="Map" />
         <item
-            android:id="@+id/nav_report_unit"
-            android:title="Report" />
+            android:id="@+id/nav_line_unit"
+            android:title="Line Chart" />
+        <item
+            android:id="@+id/nav_pie_unit"
+            android:title="Pie Chart" />
+        <item
+            android:id="@+id/nav_database_unit"
+            android:title="Database" />
     </group>
 
-    <item android:title="Communicate">
-        <menu>
-            <item
-                android:id="@+id/nav_share"
-                android:icon="@drawable/ic_menu_share"
-                android:title="Share" />
-            <item
-                android:id="@+id/nav_send"
-                android:icon="@drawable/ic_menu_send"
-                android:title="Send" />
-        </menu>
-    </item>
+    <!--<item android:title="Communicate">-->
+        <!--<menu>-->
+            <!--<item-->
+                <!--android:id="@+id/nav_share"-->
+                <!--android:icon="@drawable/ic_menu_share"-->
+                <!--android:title="Share" />-->
+            <!--<item-->
+                <!--android:id="@+id/nav_send"-->
+                <!--android:icon="@drawable/ic_menu_send"-->
+                <!--android:title="Send" />-->
+        <!--</menu>-->
+    <!--</item>-->
 
 </menu>

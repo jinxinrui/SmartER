@@ -23,33 +23,33 @@ import java.util.List;
  * Created by jxr on 28/4/18.
  */
 
-public class ReportFragment extends Fragment {
+public class LinechartFragment extends Fragment {
 
     View vReport;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        vReport = inflater.inflate(R.layout.fragment_report, container,false);
+        vReport = inflater.inflate(R.layout.fragment_linechart, container,false);
 
         LineChart chart = (LineChart)vReport.findViewById(R.id.chart);
         List<Entry> entries = new ArrayList<Entry>();
 
         //to display five values, and later formatter is used so years will not have decimal values
         float[] xAxis = {0f,1f,2f,3f,4f};
-        float[] yAxis = {100, 200, 150, 320, 470};
+        float[] yAxis = {1, 0, 2, 3, 0};
         for (int i=0; i<xAxis.length; i++){
             entries.add(new Entry(xAxis[i], yAxis[i]));
         }
 
         //implementing IAxisValueFormatter interface to show year values not as float/decimal
-        final String[] years = new String[] { "2014", "2015", "2016", "2017","2018" };
+        final String[] years = new String[] { "03-08", "03-09", "03-10", "03-11","03-12" };
         IAxisValueFormatter formatter = new IAxisValueFormatter() {
             @Override
             public String getFormattedValue(float value, AxisBase axis) {
                 return years[(int)value];
             }
         };
-        LineDataSet dataSet = new LineDataSet(entries, "This is Demo");
+        LineDataSet dataSet = new LineDataSet(entries, "Usage");
         dataSet.setAxisDependency(YAxis.AxisDependency.LEFT);
         LineData lineData = new LineData(dataSet);
         chart.setData(lineData);

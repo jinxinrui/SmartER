@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.jxr.smarter.RestWS.RestClient;
@@ -29,6 +30,7 @@ public class MainFragment extends Fragment {
     private TextView usageCondition;
     private String userInfo;
     private DBManager dbManager;
+    private ImageView imageView;
 
     @Nullable
     @Override
@@ -50,13 +52,17 @@ public class MainFragment extends Fragment {
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
         String time = sdf.format(currentTime);
 
+        imageView = (ImageView) vMain.findViewById(R.id.alertImage);
+        imageView.setImageResource(R.drawable.compass);
         String message = "Not in peak hour";
         double currentUsage = getCurrentUsage();
-        if (time.compareTo("09:00:00") >= 0 && time.compareTo("22:00:00") <= 0) {
+        if (time.compareTo("03:00:00") >= 0 && time.compareTo("22:00:00") <= 0) {
             if (currentUsage > 1.5) {
                 message = "Good!";
-            } else {
+                imageView.setImageResource(R.drawable.ic_menu_gallery);
+            } else if (currentUsage <= 1.5 && currentUsage > 0){
                 message = "Not Good!";
+                imageView.setImageResource(R.drawable.ic_menu_send);
             }
         }
         usageCondition = (TextView) vMain.findViewById(R.id.messageTextView);
@@ -92,12 +98,16 @@ public class MainFragment extends Fragment {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        double total = 0.00;
         ArrayList<ElectricityUsage> usageList =  dbManager.getUsageList();
-        ElectricityUsage usageEntry = usageList.get(usageList.size() - 1);
-        String acUsage = usageEntry.getAcusage();
-        String fridgeUsage = usageEntry.getFridgeusage();
-        String washUsage = usageEntry.getWashusage();
-        double total = Double.parseDouble(acUsage) + Double.parseDouble(fridgeUsage) + Double.parseDouble(washUsage);
+        if (usageList.size() > 0) {
+            ElectricityUsage usageEntry = usageList.get(usageList.size() - 1);
+            String acUsage = usageEntry.getAcusage();
+            String fridgeUsage = usageEntry.getFridgeusage();
+            String washUsage = usageEntry.getWashusage();
+            total = Double.parseDouble(acUsage) + Double.parseDouble(fridgeUsage) + Double.parseDouble(washUsage);
+        }
+
         dbManager.close();
         return total;
     }

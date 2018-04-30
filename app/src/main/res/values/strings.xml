@@ -22,4 +22,9 @@
         <item>AGL</item>
         <item>Red Energy</item>
     </string-array>
+
+    <string-array name="mapOptions">
+        <item>Daily</item>
+        <item>Hourly</item>
+    </string-array>
 </resources>

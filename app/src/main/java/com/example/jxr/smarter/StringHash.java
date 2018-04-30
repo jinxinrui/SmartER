@@ -8,7 +8,7 @@ import java.security.MessageDigest;
 
 public class StringHash {
     // MD5 hash
-    public static String hashPass(String password) {
+    public static String hashPassword(String password) {
         byte[] bytesOfMessage = null;
         MessageDigest md = null;
         try {

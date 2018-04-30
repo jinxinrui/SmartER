@@ -110,12 +110,8 @@ public class DBManager {
         return db.delete(DBStructure.tableEntry.TABLE_NAME, selection, selectionArgs);
     }
 
-    public void dropTable() {
-        db.execSQL(SQL_DELETE_ENTRIES);
-    }
-
-    public void reCreateTable() {
-        db.execSQL(SQL_CREATE_ENTRIES);
+    public void removeAll() {
+        db.delete(DBStructure.tableEntry.TABLE_NAME, null, null);
     }
 
     public ArrayList<ElectricityUsage> getUsageList() {
