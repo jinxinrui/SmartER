@@ -114,23 +114,23 @@ public class DBManager {
         db.delete(DBStructure.tableEntry.TABLE_NAME, null, null);
     }
 
-    public ArrayList<ElectricityUsage> getUsageList() {
-        usageList = new ArrayList<>();
-        Cursor cursor = getAll();
-        while(cursor.moveToNext()) {
-            ElectricityUsage usageEntry = new ElectricityUsage(
-                    cursor.getString(0),
-                    cursor.getString(1),
-                    cursor.getString(2),
-                    cursor.getString(3),
-                    cursor.getString(4),
-                    cursor.getString(5),
-                    cursor.getString(6),
-                    cursor.getString(7));
-            usageList.add(usageEntry);
-        }
-        cursor.close();
-
-        return usageList;
-    }
+//    public ArrayList<ElectricityUsage> getUsageList() {
+//        usageList = new ArrayList<>();
+//        Cursor cursor = getAll();
+//        while(cursor.moveToNext()) {
+//            ElectricityUsage usageEntry = new ElectricityUsage(
+//                    cursor.getString(0),
+//                    cursor.getString(1),
+//                    cursor.getString(2),
+//                    cursor.getString(3),
+//                    cursor.getString(4),
+//                    cursor.getString(5),
+//                    cursor.getString(6),
+//                    cursor.getString(7));
+//            usageList.add(usageEntry);
+//        }
+//        cursor.close();
+//
+//        return usageList;
+//    }
 }

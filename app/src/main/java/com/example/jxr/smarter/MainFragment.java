@@ -1,6 +1,7 @@
 package com.example.jxr.smarter;
 
 import android.app.Fragment;
+import android.database.Cursor;
 import android.database.SQLException;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -14,6 +15,7 @@ import android.widget.TextView;
 import com.example.jxr.smarter.RestWS.RestClient;
 import com.example.jxr.smarter.model.DBManager;
 import com.example.jxr.smarter.model.ElectricityUsage;
+import com.example.jxr.smarter.model.Resident;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -60,7 +62,7 @@ public class MainFragment extends Fragment {
             if (currentUsage > 1.5) {
                 message = "Good!";
                 imageView.setImageResource(R.drawable.ic_menu_gallery);
-            } else if (currentUsage <= 1.5 && currentUsage > 0){
+            } else if (currentUsage <= 1.5 && currentUsage > 0) {
                 message = "Not Good!";
                 imageView.setImageResource(R.drawable.ic_menu_send);
             }
@@ -79,14 +81,15 @@ public class MainFragment extends Fragment {
                 String[] latAndLon = RestClient.getLatAndLon(geoLocation);
                 String lat = latAndLon[0];
                 String lon = latAndLon[1];
-                return RestClient.findTemp(lat,lon); // result in onPostExecute is returned by this
+                return RestClient.findTemp(lat, lon); // result in onPostExecute is returned by this
             }
+
             @Override
             protected void onPostExecute(String result) {
                 String snippet = RestClient.getTempSnippet(result);
                 currentTempView.setText(snippet);
             }
-        }.execute(new String[] {null});
+        }.execute(new String[]{null});
 
 
         return vMain;
@@ -99,7 +102,26 @@ public class MainFragment extends Fragment {
             e.printStackTrace();
         }
         double total = 0.00;
-        ArrayList<ElectricityUsage> usageList =  dbManager.getUsageList();
+        //ArrayList<ElectricityUsage> usageList =  dbManager.getUsageList();
+        ArrayList<ElectricityUsage> usageList = new ArrayList<>();
+        Cursor cursor = dbManager.getAll();
+
+        String residentString = RestClient.getResidentSnippet(userInfo);
+
+        Resident currentResident = RestClient.convertResident(residentString);
+
+        while (cursor.moveToNext()) {
+            ElectricityUsage usageEntry = new ElectricityUsage(
+                    cursor.getString(0),
+                    cursor.getString(1),
+                    cursor.getString(2),
+                    cursor.getString(3),
+                    cursor.getString(4),
+                    cursor.getString(5),
+                    cursor.getString(6),
+                    currentResident);
+            usageList.add(usageEntry);
+        }
         if (usageList.size() > 0) {
             ElectricityUsage usageEntry = usageList.get(usageList.size() - 1);
             String acUsage = usageEntry.getAcusage();
@@ -111,5 +133,6 @@ public class MainFragment extends Fragment {
         dbManager.close();
         return total;
     }
-
 }
+
+

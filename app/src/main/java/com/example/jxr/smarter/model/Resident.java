@@ -10,7 +10,7 @@ import java.sql.Date;
 
 public class Resident {
 
-    private Integer resid;
+    private String resid;
     private String firstname;
     private String surname;
     private String dob;
@@ -24,7 +24,7 @@ public class Resident {
     public Resident() {
     }
 
-    public Resident(Integer resid, String fName, String sName, String dob, String address,
+    public Resident(String resid, String fName, String sName, String dob, String address,
                     String postcode, String email, String mobile, String numofRes, String provider) {
         this.resid = resid;
         this.firstname = fName;
@@ -38,11 +38,11 @@ public class Resident {
         this.provider = provider;
     }
 
-    public Integer getResid() {
+    public String getResid() {
         return resid;
     }
 
-    public void setResid(Integer resid) {
+    public void setResid(String resid) {
         this.resid = resid;
     }
 

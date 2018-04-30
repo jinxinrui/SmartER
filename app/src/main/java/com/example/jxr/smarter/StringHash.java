@@ -7,17 +7,24 @@ import java.security.MessageDigest;
  */
 
 public class StringHash {
+
+    private static MessageDigest md;
     // MD5 hash
     public static String hashPassword(String password) {
-        byte[] bytesOfMessage = null;
-        MessageDigest md = null;
         try {
-            bytesOfMessage = password.getBytes("UTF-8");
             md = MessageDigest.getInstance("MD5");
+            byte[] passBytes = password.getBytes();
+            md.reset();
+            byte[] digested = md.digest(passBytes);
+            StringBuffer sb = new StringBuffer();
+            for(int i=0;i<digested.length;i++){
+                sb.append(Integer.toHexString(0xff & digested[i]));
+            }
+            return sb.toString();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return String.valueOf(md.digest(bytesOfMessage));
+        return null;
     }
 }

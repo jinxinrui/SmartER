@@ -17,6 +17,7 @@ import android.view.MenuItem;
 import com.example.jxr.smarter.RestWS.RestClient;
 import com.example.jxr.smarter.model.DBManager;
 import com.example.jxr.smarter.model.ElectricityUsage;
+import com.example.jxr.smarter.model.Resident;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -144,7 +145,9 @@ public class MainActivity extends AppCompatActivity
                 break;
 
             case R.id.nav_database_unit:
+                bundle.putString("userInfo", userInfo);
                 nextFragment = new DataFragment();
+                nextFragment.setArguments(bundle);
                 break;
 
 
@@ -204,6 +207,10 @@ public class MainActivity extends AppCompatActivity
             String usageIdString = String.valueOf(usageId);
 
             String resident = RestClient.getResidentSnippet(userInfo);
+
+            Resident currentResident = RestClient.convertResident(resident);
+
+            String resid = RestClient.getResidSnippet(resident);
 
             String address = RestClient.getAddressSnippet(userInfo);
             address = RestClient.formatAddress(address);
@@ -269,7 +276,7 @@ public class MainActivity extends AppCompatActivity
                 usageId = usageId + 1;
 
                 // insert to database
-                insertData(usageIdString, acUsage, fridgeUsage, washUsage, dayString, timeString, temp, resident);
+                insertData(usageIdString, acUsage, fridgeUsage, washUsage, dayString, hour, temp, resident);
                 records = records + 1;
 
                 if (records >= 24) {
@@ -285,7 +292,7 @@ public class MainActivity extends AppCompatActivity
                                 cursor.getString(4),
                                 cursor.getString(5),
                                 cursor.getString(6),
-                                cursor.getString(7));
+                                currentResident);
                         usageList.add(usageEntry);
                     }
                     cursor.close();

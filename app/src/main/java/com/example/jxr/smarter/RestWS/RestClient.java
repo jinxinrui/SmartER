@@ -415,6 +415,38 @@ public class RestClient {
         return snippet;
     }
 
+    public static Resident convertResident(String jsonResident) {
+        Resident newResident;
+        String address = "";
+        String dob = "";
+        String email = "";
+        String firstname = "";
+        String mobile = "";
+        String numofres = "";
+        String postcode = "";
+        String provider = "";
+        String resid = "";
+        String surname = "";
+        try{
+            JSONObject jsonObject = new JSONObject(jsonResident);
+            address = jsonObject.getString("address");
+            dob = jsonObject.getString("dob");
+            email = jsonObject.getString("email");
+            firstname = jsonObject.getString("firstname");
+            mobile = jsonObject.getString("mobile");
+            numofres = jsonObject.getString("numofres");
+            postcode = jsonObject.getString("postcode");
+            provider = jsonObject.getString("provider");
+            resid = jsonObject.getString("resid");
+            surname = jsonObject.getString("surname");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        newResident = new Resident(resid, firstname, surname, dob, address, postcode, email, mobile, numofres, provider);
+        return newResident;
+    }
+
     // get resident id snippet from resident
     public static String getResidSnippet(String resident) {
         String snippet = null;

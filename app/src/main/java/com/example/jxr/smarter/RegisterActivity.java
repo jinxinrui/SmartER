@@ -37,7 +37,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     private EditText mUsername;
     private EditText mPassword;
 
-    private Integer resid;
+    private String resid;
 
     private Button mSubmitButton;
 
@@ -56,7 +56,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
 
         int count = Integer.parseInt(countString) + 1;
 
-        resid = count;
+        resid = String.valueOf(count);
 
         mFirstname = (EditText) findViewById(R.id.firstname);
         mSurname = (EditText) findViewById(R.id.surname);
@@ -145,8 +145,8 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                                 DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
                                 Date date = new Date();
                                 String currentDate = dateFormat.format(date);
-
-                                User user = new User(username, password, currentDate, resident);
+                                String passwdHash = StringHash.hashPassword(password);
+                                User user = new User(username, passwdHash, currentDate, resident);
                                 RestClient.createUser(user);
                             }
 

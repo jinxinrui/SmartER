@@ -9,12 +9,12 @@ public class ElectricityUsage {
     private String acusage;
     private String fridgeusage;
     private String washusage;
-    private String temperature;
     private String date;
     private String time;
-    private String resid;
+    private String temperature;
+    private Resident resid;
 
-    public ElectricityUsage(String usageid, String acusage, String fridgeusage, String washusage, String temperature, String date, String time, String resid) {
+    public ElectricityUsage(String usageid, String acusage, String fridgeusage, String washusage, String date, String time, String temperature, Resident resid) {
         this.usageid = usageid;
         this.acusage = acusage;
         this.fridgeusage = fridgeusage;
@@ -85,13 +85,14 @@ public class ElectricityUsage {
         this.time = time;
     }
 
-    public String getResid() {
+    public Resident getResid() {
         return resid;
     }
 
-    public void setResid(String resid) {
+    public void setResid(Resident resid) {
         this.resid = resid;
     }
+
 
     @Override
     public String toString() {
@@ -102,8 +103,6 @@ public class ElectricityUsage {
                 ", washusage='" + washusage + '\'' +
                 ", temperature='" + temperature + '\'' +
                 ", date='" + date + '\'' +
-                ", time='" + time + '\'' +
-                ", resid='" + resid + '\'' +
-                '}';
+                ", time='" + time + '\'' + '}';
     }
 }

@@ -21,8 +21,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     private EditText mPasswordEditText;
 
-    private String realPassword;
-
     private String userInfo;
 
     // test api
@@ -64,11 +62,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                     }
                     @Override
                     protected void onPostExecute(String result) {
-                        realPassword = RestClient.getPassword(result);
+                        String realPassword = RestClient.getPassword(result);
                         userInfo = result;
 
-                        if (!mPasswordEditText.getText().toString().trim().isEmpty() &&
-                                mPasswordEditText.getText().toString().equals(realPassword)) {
+                        String inputPassword = StringHash.hashPassword(mPasswordEditText.getText().toString());
+
+                        if (inputPassword.equals(realPassword)) {
                             goToMainPage(userInfo);
                         } else {
                             AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
