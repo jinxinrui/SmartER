@@ -58,12 +58,12 @@ public class MainFragment extends Fragment {
         imageView.setImageResource(R.drawable.compass);
         String message = "Not in peak hour";
         double currentUsage = getCurrentUsage();
-        if (time.compareTo("03:00:00") >= 0 && time.compareTo("22:00:00") <= 0) {
+        if (time.compareTo("09:00:00") >= 0 && time.compareTo("22:00:00") <= 0) {
             if (currentUsage > 1.5) {
-                message = "Good!";
+                message = "Not Good!";
                 imageView.setImageResource(R.drawable.ic_menu_gallery);
             } else if (currentUsage <= 1.5 && currentUsage > 0) {
-                message = "Not Good!";
+                message = "Good!";
                 imageView.setImageResource(R.drawable.ic_menu_send);
             }
         }

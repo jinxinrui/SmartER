@@ -141,7 +141,11 @@ public class MainActivity extends AppCompatActivity
                 break;
 
             case R.id.nav_pie_unit:
+                String residentString = RestClient.getResidentSnippet(userInfo);
+                String resid = RestClient.getResidSnippet(residentString);
+                bundle.putString("resid", resid);
                 nextFragment = new PiechartFragment();
+                nextFragment.setArguments(bundle);
                 break;
 
             case R.id.nav_database_unit:
@@ -276,7 +280,7 @@ public class MainActivity extends AppCompatActivity
                 usageId = usageId + 1;
 
                 // insert to database
-                insertData(usageIdString, acUsage, fridgeUsage, washUsage, dayString, hour, temp, resident);
+                insertData(usageIdString, acUsage, fridgeUsage, washUsage, dayString, hour, temp, resid);
                 records = records + 1;
 
                 if (records >= 24) {
@@ -307,8 +311,8 @@ public class MainActivity extends AppCompatActivity
                     // clear usageList
                     usageList.clear();
                 }
-
-
+                usageId = usageId + 1;
+                usageIdString = String.valueOf(usageId);
 
                 try {
                     Thread.sleep(1000*60*60);

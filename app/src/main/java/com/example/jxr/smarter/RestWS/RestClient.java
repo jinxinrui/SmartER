@@ -526,4 +526,52 @@ public class RestClient {
             connection.disconnect();
         }
     }
+
+    public static String getDailyUsage(String resid, String date){
+        URL url = null;
+        HttpURLConnection connection = null;
+        String textResult = "";
+        String methodPath = "/entities.electricityusage/dailyUsage1/";
+        try {
+            url = new URL(BASE_URI + methodPath + resid + "/" + date);
+            // open the connection
+            connection = (HttpURLConnection) url.openConnection();
+            // set the time out
+            connection.setReadTimeout(10000);
+            connection.setConnectTimeout(15000);
+            // set the connection method to GET
+            connection.setRequestMethod("GET");
+            //add http headers to set your response type to json
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestProperty("Accept", "application/json");
+            //Read the response
+            Scanner inStream = new Scanner(connection.getInputStream());
+            //read the input stream and store it as string
+            while (inStream.hasNextLine()) {
+                textResult += inStream.nextLine();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }finally {
+            connection.disconnect();
+        }
+        return textResult;
+    }
+
+    public static String[] getDailyUsageSnippet(String dailyUsage) {
+        String[] snippet = new String[] {"", "", ""};
+        try {
+            JSONArray jsonArray = new JSONArray(dailyUsage);
+            JSONObject jsonObject = jsonArray.getJSONObject(0);
+            String air = jsonObject.getString("aircon");
+            String fridge = jsonObject.getString("fridge");
+            String wash = jsonObject.getString("washingmachine");
+            snippet[0] = air;
+            snippet[1] = fridge;
+            snippet[2] = wash;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return snippet;
+    }
 }
